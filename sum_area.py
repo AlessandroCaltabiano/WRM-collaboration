@@ -179,7 +179,7 @@ if __name__=="__main__" :
                 cwd=os.getcwd()
                 for x in np.arange(int(xa),int(xb)) :
                     for y in np.arange(int(ya),int(yb)) :
-                        path="/"+sys.argv[1]+"/"+str(x)+"x"+str(y) #path+filename to be saved
+                        path="/"+sys.argv[1][:-4]+"/"+str(x)+"x"+str(y) #path+filename to be saved
                         if not os.path.isfile(cwd+path+".npy") : #if file already exist create it
                             print("info: creating "+path+".npy")
                             mask=np.zeros((x,y)) #window size
