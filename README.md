@@ -1,7 +1,6 @@
 # WRM-collaboration
 
 This folder's aim is to share software between collaborators, improve it and create new ones.
-Feel free to suggest editing and changes...
 All tips on codes are kindly accepted!
 
 
@@ -23,3 +22,8 @@ run mode produces (not visualize) a range of values of #len_x_window #len_y_wind
 Produces noise profile of raw data and filtered data. Filtered data are refered to the output files of sum_area.py
 
 
+#sendRawEth.c
+Send raw packet through a setted physical port, default eth0.
+
+#eth_to_FPGA_rev1.c 
+recieve packets from a setted physical port (default eth0) and send it to the "/dev/*_write_*" through a pipe. Verify this program with the command "od -t -x1 *_read_* "
