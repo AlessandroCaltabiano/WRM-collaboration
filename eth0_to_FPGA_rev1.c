@@ -29,31 +29,43 @@
 #include <stdint.h>
 #include <sys/wait.h>
 
-/*ethernet definition*/
+/*ETHERNET DEFINITION*/
 
+/*define my MAC address*/
 #define DEST_MAC0	0x00
 #define DEST_MAC1	0x1c
 #define DEST_MAC2	0xc0
 #define DEST_MAC3	0x96
 #define DEST_MAC4	0x01
 #define DEST_MAC5	0x68
-
+/*ethernet type*/
 #define ETHER_TYPE	ETHERTYPE_IP
-
+/*physical ethernet port name*/
 #define DEFAULT_IF	"eth0"
+/*size of the array in which store data*/
 #define BUF_SIZ		1024
-/*static variable xilly*/
 
+/*XILLYBUS DEFINITION*/
+/*all "xilly_*" variables and functions are refered
+to PCIe (thus FPGA) comunication*/
+
+/*variable that ensure that PCIe's write file descriptor
+is correctly initialized*/
 static bool xilly_write_initted = false;
+
+/*PCIe's write file descriptor*/
 static int  xilly_fd_write = -1;
 
 
 /**
- * xilly_write_init:
+ * @XILLY_DEV_WRITE: /path/fd_name of the file descriptor
  *
- * @XILLY_DEV_WRITE: a #const
+ * xilly_write_init: check if @XILLY_DEV_WRITE is already opened
+ *		     (thanks to xilly_write_initted variable)
+ *		     if not, open it in write only mode
  *
- * Returns:
+ * Returns:	1 --> if all is going well
+ *	       -1 --> if something appens
  */
  
 int xilly_write_init (const char *XILLY_DEV_WRITE)
@@ -77,9 +89,12 @@ int xilly_write_init (const char *XILLY_DEV_WRITE)
 }
 
 /**
- * xilly_write_deinit:
+ * @void
  *
- * Returns:
+ * xilly_write_deinit:	deinitialize write file descriptor
+ *
+ * Returns:	1 --> if all is going well
+ *	       -1 --> if fd is already deinit.
  */
 int xilly_write_deinit ()
 {
@@ -92,9 +107,19 @@ int xilly_write_deinit ()
     }
     return -1;
 }
-
-/*recv from buf to xilly*/
-
+/*
+* @IOVEC *IOV: structure where data and data's lenth from etherent are stored
+*
+* @OUT_FD: file descriptor 
+*
+* @COUNT: data's lenth
+*
+* do_recvbuff: create a pipe -> send buff to the input pipe -> send the output pipe to out_fd
+*
+* Returns :     number of bytes sent --> if all is going well
+*		-1 --> something wrong happend
+*
+*/
 ssize_t do_recvbuff(int out_fd, const struct iovec *iov, size_t count) {
     ssize_t bytes, bytes_sent, bytes_in_pipe;
     size_t total_bytes_sent = 0;
@@ -165,7 +190,7 @@ int main(int argc, char *argv[])
     }
 	
 	
-	/* Get interface name */
+	/* Get physical port name */
 	if (argc > 1)
 		strcpy(ifName, argv[1]);
 	else
@@ -206,6 +231,7 @@ int main(int argc, char *argv[])
 	
 	
 //repeat:	
+	//call function recvfrom: recieve from socket data and store it in buf
 	while((numbytes = recvfrom(sockfd, buf, BUF_SIZ, 0, NULL, NULL))>0){
 
 		printf("listener: Waiting to recvfrom...\n");
