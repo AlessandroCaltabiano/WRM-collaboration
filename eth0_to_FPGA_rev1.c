@@ -124,13 +124,14 @@ ssize_t do_recvbuff(int out_fd, const struct iovec *iov, size_t count) {
     ssize_t bytes, bytes_sent, bytes_in_pipe;
     size_t total_bytes_sent = 0;
 	int pipefd[2];
-	
+	/*Create a pipe: pipefd[1] input, pipefd[0] output*/
 	if ( pipe(pipefd) < 0 ) {
     perror("pipe");
     exit(EXIT_FAILURE);
 	}
 	printf("I'm sending : %ld\n", count);
-    // Vmsplice the data from buff into the pipe
+    // Vmsplice the data from buff into the pipe:
+   // "connect" buff to the input of the pipe till total bytes sent == bytes in buff
     while (total_bytes_sent < count) {
         if ((bytes_sent = vmsplice(pipefd[1], iov ,1,0)) <= 0) {
 			
@@ -143,11 +144,11 @@ ssize_t do_recvbuff(int out_fd, const struct iovec *iov, size_t count) {
         else
 		printf("Vmsplice is working!!!\n");
 
-        // Splice the data from the pipe into out_fd
+        // Splice the data from the pipe into out_fd:
         bytes_in_pipe =bytes_sent;
 
         while (bytes_in_pipe > 0) {
-
+	    // "Connect" pipe out to xilly_write till bytes in pipe are 0
             if ((bytes = splice(pipefd[0], NULL, out_fd, NULL, bytes_in_pipe,
                     SPLICE_F_MORE | SPLICE_F_MOVE)) <= 0) {
 						
@@ -240,6 +241,7 @@ int main(int argc, char *argv[])
 
         
 	/* Check the packet is for me */
+	/**/
 	if (eh->ether_dhost[0] == DEST_MAC0 &&
 			eh->ether_dhost[1] == DEST_MAC1 &&
 			eh->ether_dhost[2] == DEST_MAC2 &&
